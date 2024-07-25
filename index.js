@@ -25,4 +25,13 @@ app.post('/convert', async(req, res) => {
     }
 });
 
+app.get('/', async(req, res) => {
+    try {
+        res.json({success: true, output: 'Successful request'})
+    } catch (error) {
+        res.json({success: false, output: error.toString()})
+    }
+});
+
+
 app.listen(port, () => console.log(`Started server at http://localhost:${port}!`));
