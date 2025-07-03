@@ -13,9 +13,18 @@ app.use(express.urlencoded({limit: '50mb'}));
 app.post('/convert', async(req, res) => {
     try {
         const {html, format, width, height} = req.body
-        const browser = await puppeteer.launch()
+        const browser = await puppeteer.launch({
+  		args: ['--no-sandbox',
+		    '--disable-setuid-sandbox',
+		    '--disable-dev-shm-usage',
+		    '--disable-accelerated-2d-canvas',
+		    '--disable-gpu',
+		    '--no-zygote',
+		    '--single-process'
+		]
+	})
         const page = await browser.newPage()
-        await page.setContent(html)
+        await page.setContent(html, { waitUntil: 'domcontentloaded' })
         const pdfBuffer = await page.pdf({ format, printBackground: true, width, height })
         await browser.close()
         const text = pdfBuffer.toString('base64')
