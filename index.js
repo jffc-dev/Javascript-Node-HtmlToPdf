@@ -21,7 +21,7 @@ app.post('/convert', async(req, res) => {
             ]
         })
         const page = await browser.newPage()
-        await page.setContent(html)
+        await page.setContent(html, { waitUntil: 'domcontentloaded' })
         const pdfBuffer = await page.pdf({ format, printBackground: true, width, height })
         await browser.close()
         const text = pdfBuffer.toString('base64')
