@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const app = express()
-const port = process.env.PORT
+const port = process.env.PORT || 8080
 
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
@@ -13,7 +13,13 @@ app.use(express.urlencoded({limit: '50mb'}));
 app.post('/convert', async(req, res) => {
     try {
         const {html, format, width, height} = req.body
-        const browser = await puppeteer.launch()
+        const browser = await puppeteer.launch({
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage'
+            ]
+        })
         const page = await browser.newPage()
         await page.setContent(html)
         const pdfBuffer = await page.pdf({ format, printBackground: true, width, height })
