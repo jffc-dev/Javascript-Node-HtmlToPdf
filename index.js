@@ -45,7 +45,16 @@ async function getBrowser() {
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
 
-app.post('/convert', async(req, res) => {
+const apiKey = process.env.API_KEY
+function requireApiKey(req, res, next) {
+    const authHeader = req.headers['authorization']
+    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== apiKey) {
+        return res.status(401).json({ success: false, output: 'Unauthorized' })
+    }
+    next()
+}
+
+app.post('/convert', requireApiKey, async(req, res) => {
     let page
     try {
         const {html, format, width, height} = req.body
@@ -62,7 +71,7 @@ app.post('/convert', async(req, res) => {
     }
 });
 
-app.post('/send-email', async (req, res) => {
+app.post('/send-email', requireApiKey, async (req, res) => {
     try {
         const { to, subject, html, text } = req.body
         if (!to || !subject || (!html && !text)) {
