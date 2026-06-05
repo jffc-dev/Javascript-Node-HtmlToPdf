@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer'
 import express from 'express'
 import dotenv from 'dotenv'
+import nodemailer from 'nodemailer'
 
 dotenv.config()
 
@@ -17,6 +18,16 @@ const launchOptions = {
 
 let browser
 let browserPromise
+
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+    },
+})
 
 // Launch Chromium once and reuse it. Relaunch transparently if it ever dies.
 async function getBrowser() {
@@ -50,6 +61,25 @@ app.post('/convert', async(req, res) => {
         if (page) await page.close().catch(() => {})
     }
 });
+
+app.post('/send-email', async (req, res) => {
+    try {
+        const { to, subject, html, text } = req.body
+        if (!to || !subject || (!html && !text)) {
+            return res.status(400).json({ success: false, output: 'Missing required fields: to, subject, and html or text' })
+        }
+        const info = await transporter.sendMail({
+            from: `"${process.env.GMAIL_FROM_NAME || 'No Reply'}" <${process.env.GMAIL_USER}>`,
+            to,
+            subject,
+            html,
+            text,
+        })
+        res.json({ success: true, output: info.messageId })
+    } catch (error) {
+        res.json({ success: false, output: error.toString() })
+    }
+})
 
 app.get('/', async(req, res) => {
     try {
