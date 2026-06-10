@@ -20,12 +20,13 @@ let browser
 let browserPromise
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    service: 'gmail',
     auth: {
+        type: 'OAuth2',
         user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
+        clientId: process.env.GMAIL_CLIENT_ID,
+        clientSecret: process.env.GMAIL_CLIENT_SECRET,
+        refreshToken: process.env.GMAIL_REFRESH_TOKEN,
     },
 })
 
